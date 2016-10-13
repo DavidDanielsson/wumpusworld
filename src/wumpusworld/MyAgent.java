@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Execution
@@ -292,6 +294,107 @@ public class MyAgent implements Agent
         return 0;
     }
 
-    
+    private void Move(int x, int y)
+    {
+
+
+
+        int cX = w.getPlayerX();
+        int cY = w.getPlayerY();
+
+
+
+
+
+
+    }
+
+    private ArrayList<Tile> FindPath(int startX, int startY, int goalX, int goalY)
+    {
+        // Used to iterate over all neighbours
+        int offset[][] = new int[][]
+                {
+                        { -1, 0 }
+                        , { 1, 0 }
+                        , { 0, 1 }
+                        , { 0, -1 }
+                };
+
+        class Node
+        {
+            public int x;
+            public int y;
+            public int gValue;
+            public int hValue;
+            public Node parent;
+
+            public Node(int x, int y, int gValue, int hValue)
+            {
+                this.x = x;
+                this.y = y;
+                this.gValue = gValue;
+                this.hValue = hValue;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                Node node = (Node) o;
+
+                if (x != node.x) return false;
+                return y == node.y;
+
+            }
+        };
+
+        ArrayList<Node> openList = new ArrayList<>();
+        ArrayList<Node> closedList = new ArrayList<>();
+
+        openList.add(new Node(startX,startY,0, 0));
+
+
+        // Iterate until we found our goal
+        while(!openList.isEmpty())
+        {
+            // Hax
+            Collections.sort(openList, (o1, o2) -> o1.gValue+o1.hValue < o2.gValue+o2.hValue ? 1 : -1);
+
+            Node currentNode = openList.get(0);
+            openList.remove(0);
+            if(currentNode.x == goalX && currentNode.y == goalY)
+            {
+                // Build up return list (IMPLEMENT)
+                break;
+            }
+
+            for (int i = 0; i < 4; ++i) {
+
+                int nextX = currentNode.x + offset[i][0];
+                int nextY = currentNode.y + offset[i][1];
+                // Make sure its an interesting node to add to open list
+                if (w.isValidPosition(nextX, nextY) && // Needs to be valid
+                        !w.isUnknown(nextX, nextY) && // Needs to be known
+
+                        closedList.contains(new Node(nextX, nextY, 0, 0))) // Needs to not already be in closed list
+                {
+                    // Calculate gvalue
+                    int gValue = 1;
+                    if(w.hasPit(nextX, nextY))
+                        gValue = 50; // Value could be tweaked, but pits are bad
+                    int hValue = goalX - 
+                    openList.add(new Node(nextX, nextY, currentNode.gValue+gValue));
+                }
+            }
+
+            Tile bestTile;
+            // Check each surrounding node
+
+        }
+    }
+
+
+
 }
 
