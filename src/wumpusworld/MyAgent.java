@@ -411,6 +411,10 @@ public class MyAgent implements Agent
         for (int i = path.size() - 1; i >= 0; i--)
         {
             RotatePlayer(path.get(i).x, path.get(i).y);
+            // If player is next to the only unexplored spot left on the map
+            // and wumpus is alive, shoot it before entering the square
+            if (i == 0 && w.wumpusAlive() && openList.size() == 1 && w.hasArrow())
+                w.doAction(World.A_SHOOT);
             w.doAction(World.A_MOVE);
         }
     }
@@ -430,12 +434,14 @@ public class MyAgent implements Agent
         else
             targetDir = World.DIR_DOWN;
 
-
-        // Keep spinning until we face the right way
-        while (w.getDirection() != targetDir)
-        {
+        // Turn right if it gives us the desired direction
+        if ((w.getDirection() + 1) % 4 == targetDir)
             w.doAction(World.A_TURN_RIGHT);
-        }
+        else // Keep spinning left until we face the right way
+            while (w.getDirection() != targetDir)
+            {
+                w.doAction(World.A_TURN_LEFT);
+            }
     }
 
 
