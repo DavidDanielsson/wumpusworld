@@ -84,7 +84,8 @@ public class MapGenerator
         {
             int x = rnd(r);
             int y = rnd(r);
-            if (!(x == 1 && y == 1))
+            if (!(x == 1 && y == 1)
+                    && (x != w.getWumpus().x && y != w.getWumpus().y))
             {
                 valid = true;
                 w.addGold(x, y);

@@ -54,6 +54,13 @@ public class MyAgent implements Agent
         ReadUtilityValuesFromFile();
     }
 
+    public void SetWorld(World world)
+    {
+        w = world;
+        openList = new ArrayList<>();
+    }
+
+
 
     private void ReadUtilityValuesFromFile()
     {
@@ -99,7 +106,7 @@ public class MyAgent implements Agent
 
     }
 
-    private void WriteUtilityValuesToFile()
+    public void WriteUtilityValuesToFile()
     {
         try
         {
@@ -119,6 +126,8 @@ public class MyAgent implements Agent
         {
             e.printStackTrace();
         }
+
+        System.out.println("utilityValues size = " + Integer.toString(utilityValues.size()));
     }
 
 
@@ -181,19 +190,24 @@ public class MyAgent implements Agent
             }
         }
 
+        if(openList.size() == 0)
+        {
+            int asdf = 5;
+        }
 
         // Open list is updated. Iterate through it
         int maxUtility = Integer.MIN_VALUE;
         Tile bestTile = new Tile(0,0);
+        int bestMask = 0;
         for (Tile tile : openList)
         {
             int utility = GetUtility(tile);
             if (utility > maxUtility)
             {
+                bestMask = MakeMask(tile);
                 maxUtility = utility;
                 bestTile = tile;
             }
-            maxUtility = Integer.max(maxUtility, GetUtility(tile));
         }
 
         // We now have the best tile.
@@ -215,8 +229,8 @@ public class MyAgent implements Agent
         }
 
         maxUtility += results;
-        int bitMask = MakeMask(bestTile);
-        utilityValues.put(bitMask, maxUtility);
+
+        utilityValues.put(bestMask, maxUtility);
 
 
 
@@ -227,7 +241,7 @@ public class MyAgent implements Agent
 
         // Once move is done, check if we know where wumpus is
 
-        WriteUtilityValuesToFile();
+        //WriteUtilityValuesToFile();
 
     }
 
@@ -239,7 +253,7 @@ public class MyAgent implements Agent
         return (int) (Math.random() * 4);
     }
 
-    private static final int numStuffWeTrack = 2;
+    private static final int numStuffWeTrack = 3;
     private static final int breeze = 1;
     private static final int stench = 2;
     private static final int unknown = 4;
@@ -278,11 +292,11 @@ public class MyAgent implements Agent
                     bitMask |= stench << (numStuffWeTrack * ((x + 1) + (y + 1) * 3));
                 }
                 // Might be worth tracking unknown and out of bounds
-                //if(w.isUnknown(worldTileX,worldTileY))
-                //{
-                //    // Hax
-                //    bitMask |= unknown << (3 * ((x + 1) + (y + 1) * 3));
-                //}
+                if(w.isUnknown(worldTileX,worldTileY))
+                {
+                    // Hax
+                    bitMask |= unknown << (numStuffWeTrack * ((x + 1) + (y + 1) * 3));
+                }
                 // Maybe check if we're out of map
             }
         }
@@ -388,6 +402,12 @@ public class MyAgent implements Agent
 
         ArrayList<Tile> path = FindPath(cX, cY, x, y);
 
+        if(path == null)
+        {
+            System.out.println("No path found!");
+            path = FindPath(cX, cY, x, y);
+        }
+
         for (int i = path.size() - 1; i >= 0; i--)
         {
             RotatePlayer(path.get(i).x, path.get(i).y);
@@ -459,7 +479,6 @@ public class MyAgent implements Agent
 
             }
         }
-        ;
 
         ArrayList<Node> openList = new ArrayList<>();
         ArrayList<Node> closedList = new ArrayList<>();

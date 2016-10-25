@@ -1,5 +1,7 @@
 package wumpusworld;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
@@ -33,6 +35,8 @@ public class GUI implements ActionListener
     private ImageIcon l_player_down;
     private ImageIcon l_player_left;
     private ImageIcon l_player_right;
+
+    private boolean runAgent = false;
     
     /**
      * Creates and start the GUI.
@@ -206,6 +210,8 @@ public class GUI implements ActionListener
         //Show window
         frame.setVisible(true);
     }
+
+    Thread thread;
     
     /**
      * Button commands.
@@ -266,8 +272,79 @@ public class GUI implements ActionListener
             {
                 agent = new MyAgent(w);
             }
-            agent.doAction();
-            updateGame();
+
+            // Declare separate thread to continually run the agent
+            Runnable doStuff = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    int wins = 0;
+                    int losses = 0;
+                    long score = 0;
+                    int runs = 0;
+
+                    // Keep running the bot
+                    while(true)
+                    {
+                        // Play each game until game over
+                        while (!w.gameOver())
+                        {
+                            agent.doAction();
+                            updateGame();
+
+                            // Sleep so we can watch the agent move
+                            try
+                            {
+                                Thread.sleep(1);
+                            }
+                            catch (InterruptedException e1)
+                            {
+                                e1.printStackTrace();
+                            }
+                        }
+
+                        if(w.hasGold())
+                            wins++;
+                        else
+                            losses++;
+
+                        runs++;
+                        score += w.getScore();
+
+                        // Game over. Print results to console
+                        //System.out.print(w.hasGold() ? "Player won " : "Died ");
+                        //System.out.println(" with " + Integer.toString(w.getScore()) + " points");
+
+                        if((wins + losses) % 500 == 0)
+                        {
+                            // Update utility database file
+                            System.out.println("Wins: " + Integer.toString(wins) + ", losses: " + Integer.toString(losses) + ", ratio: " + Float.toString(wins / (float)losses));
+                            System.out.println("Average score: " + Float.toString(score / (float)runs));
+                            ((MyAgent) agent).WriteUtilityValuesToFile();
+                        }
+
+
+                        // Start new game (copy pasted from row 253 above)
+                        String s = (String) mapList.getSelectedItem();
+                        if (s.equalsIgnoreCase("Random"))
+                        {
+                            w = MapGenerator.getRandomMap((int) System.currentTimeMillis()).generateWorld();
+                        } else
+                        {
+                            int i = Integer.parseInt(s);
+                            i--;
+                            w = maps.get(i).generateWorld();
+                        }
+                        ((MyAgent) agent).SetWorld(w);
+                        updateGame();
+                    }
+                }
+            };
+
+            thread = new Thread(doStuff);
+            thread.start();
+            //doStuff.run();
         }
     }
     
