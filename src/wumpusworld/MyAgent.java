@@ -13,9 +13,12 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Execution
@@ -34,7 +37,7 @@ import java.util.*;
 
 public class MyAgent implements Agent
 {
-    private static final String databaseFileName = "database.txt";
+    private static final String databaseFileName = "database.botdb";
     
     private ArrayList<Tile> openList = new ArrayList<>();
     // Index is bitmask for board, value is utility value
@@ -64,70 +67,72 @@ public class MyAgent implements Agent
 
     private void ReadUtilityValuesFromFile()
     {
-
-        //File file = new File("database.txt"); // pleb version
         // Read all lines and save into array list
         ArrayList<String> lines = new ArrayList<>();
         String line;
         File file = new File(databaseFileName);
         // Check if file exists. If it doesn't, create it
         if (!file.exists())
+        {
             try
             {
                 file.createNewFile();
+                return; // No need to read anything
             }
             catch (IOException e)
             {
                 e.printStackTrace();
             }
-        // open op file and start reading
-        try (
-                InputStream fis = new FileInputStream(databaseFileName);
-                InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                BufferedReader br = new BufferedReader(isr);
-        )
-        {
-            // Read all lines from the file
-            while ((line = br.readLine()) != null)
-            {
-                String[] splitLine = line.split(" ");
-                utilityValues.put(Integer.parseInt(splitLine[0]),Integer.parseInt(splitLine[1]));
-            }
-            // Catch because we need it
         }
-        catch (FileNotFoundException e)
+
+        try
         {
-            e.printStackTrace();
+            DataInputStream inputStream = new DataInputStream(new FileInputStream(databaseFileName));
+
+            int utilityValuesSize = inputStream.readInt();
+
+            for(int i = 0; i < utilityValuesSize; ++i)
+            {
+                utilityValues.put(inputStream.readInt(), inputStream.readInt());
+            }
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
-
     }
 
     public void WriteUtilityValuesToFile()
     {
+        // Failsafe in case values haven't been read
+        if(utilityValues.size() == 0)
+            return;
+
         try
         {
-            Files.delete(Paths.get(databaseFileName));
-            Files.createFile(Paths.get(databaseFileName));
+            // Create temporary file in case shutdown happens while writing
+            Path tempFilePath = Paths.get(databaseFileName + ".temp");
+            if(Files.exists(tempFilePath))
+                Files.delete(tempFilePath);
+
+            Files.createFile(tempFilePath);
+            DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(tempFilePath.toString()));
+
+            outputStream.writeInt(utilityValues.size());
+
             for(Map.Entry<Integer, Integer> entry : utilityValues.entrySet())
                 {
-                    Integer bitmask = entry.getKey();
-                    Integer utilityValue = entry.getValue();
-                    String writeString = Integer.toString(bitmask) + " " + Integer.toString(utilityValue) + "\n";
-
-                    Files.write(Paths.get(databaseFileName), writeString.getBytes(), StandardOpenOption.APPEND);
+                    // Write bitmask and utility value
+                    outputStream.writeInt(entry.getKey());
+                    outputStream.writeInt(entry.getValue());
                 }
 
+            Files.move(tempFilePath, Paths.get(databaseFileName), REPLACE_EXISTING);
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
-
-        System.out.println("utilityValues size = " + Integer.toString(utilityValues.size()));
     }
 
 
@@ -190,11 +195,6 @@ public class MyAgent implements Agent
             }
         }
 
-        if(openList.size() == 0)
-        {
-            int asdf = 5;
-        }
-
         // Open list is updated. Iterate through it
         int maxUtility = Integer.MIN_VALUE;
         Tile bestTile = new Tile(0,0);
@@ -232,17 +232,8 @@ public class MyAgent implements Agent
 
         utilityValues.put(bestMask, maxUtility);
 
-
-
-        // Flip wumpus bits if he is found
-        // List iterated. Make move with best utility
-        // Once move is done, update utility
-
-
-        // Once move is done, check if we know where wumpus is
-
-        //WriteUtilityValuesToFile();
-
+        // This doesn't actually have to be done after each move
+        WriteUtilityValuesToFile();
     }
 
     /**

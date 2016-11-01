@@ -321,8 +321,8 @@ public class GUI implements ActionListener
                             // Update utility database file
                             System.out.println("Wins: " + Integer.toString(wins) + ", losses: " + Integer.toString(losses) + ", ratio: " + Float.toString(wins / (float)losses));
                             System.out.println("Average score: " + Float.toString(score / (float)runs));
-                            ((MyAgent) agent).WriteUtilityValuesToFile();
                         }
+                        ((MyAgent) agent).WriteUtilityValuesToFile();
 
 
                         // Start new game (copy pasted from row 253 above)
@@ -343,8 +343,11 @@ public class GUI implements ActionListener
             };
 
             thread = new Thread(doStuff);
-            thread.start();
+            //thread.start();
             //doStuff.run();
+
+            agent.doAction();
+            updateGame();
         }
     }
     
