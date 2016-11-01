@@ -312,18 +312,13 @@ public class GUI implements ActionListener
                         runs++;
                         score += w.getScore();
 
-                        // Game over. Print results to console
-                        //System.out.print(w.hasGold() ? "Player won " : "Died ");
-                        //System.out.println(" with " + Integer.toString(w.getScore()) + " points");
-
-                        if((wins + losses) % 500 == 0)
+                        // Print some info after X runs
+                        if((wins + losses) % 10 == 0)
                         {
                             // Update utility database file
                             System.out.println("Wins: " + Integer.toString(wins) + ", losses: " + Integer.toString(losses) + ", ratio: " + Float.toString(wins / (float)losses));
                             System.out.println("Average score: " + Float.toString(score / (float)runs));
                         }
-                        ((MyAgent) agent).WriteUtilityValuesToFile();
-
 
                         // Start new game (copy pasted from row 253 above)
                         String s = (String) mapList.getSelectedItem();
@@ -343,11 +338,7 @@ public class GUI implements ActionListener
             };
 
             thread = new Thread(doStuff);
-            //thread.start();
-            //doStuff.run();
-
-            agent.doAction();
-            updateGame();
+            thread.start();
         }
     }
     

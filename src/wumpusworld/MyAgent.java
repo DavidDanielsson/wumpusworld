@@ -127,7 +127,11 @@ public class MyAgent implements Agent
                     outputStream.writeInt(entry.getValue());
                 }
 
-            Files.move(tempFilePath, Paths.get(databaseFileName), REPLACE_EXISTING);
+            Path filePath = Paths.get(databaseFileName);
+            if(Files.exists(filePath))
+                Files.delete(filePath);
+
+            Files.move(tempFilePath, filePath);
         }
         catch (IOException e)
         {
