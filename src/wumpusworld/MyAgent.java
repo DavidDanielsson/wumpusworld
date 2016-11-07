@@ -127,6 +127,8 @@ public class MyAgent implements Agent
                     outputStream.writeInt(entry.getValue());
                 }
 
+            outputStream.close();
+
             Path filePath = Paths.get(databaseFileName);
             if(Files.exists(filePath))
                 Files.delete(filePath);
