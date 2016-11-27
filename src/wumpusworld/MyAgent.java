@@ -209,10 +209,10 @@ public class MyAgent implements Agent
         // Remove from open list, since it is explored now
         openList.remove(bestTile);
 
-        // See how well this move was.
+        // See how good this move was.
         // If nothing bad happens, it is a good move
         int utility = 500;
-        // If we fell into a pit give bad score
+        // If we fell into a pit give bad utility
         if(w.isInPit())
         {
             utility -= 1000;
@@ -230,14 +230,6 @@ public class MyAgent implements Agent
         // Write all utility values of all the situations the agent has
         // been experienced to the database file,so it can remember next time the application runs
         WriteUtilityValuesToFile();
-    }
-
-    /**
-     * Genertes a random instruction for the Agent.
-     */
-    public int decideRandomMove()
-    {
-        return (int) (Math.random() * 4);
     }
 
     // Get the utility of a specific tile
