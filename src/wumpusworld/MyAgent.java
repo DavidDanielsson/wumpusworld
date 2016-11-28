@@ -313,6 +313,9 @@ public class MyAgent implements Agent
                 w.doAction(World.A_SHOOT);
             //Move forward
             w.doAction(World.A_MOVE);
+            // If we entered a pit, climb
+            if (w.isInPit())
+                w.doAction(World.A_CLIMB);
         }
     }
 
